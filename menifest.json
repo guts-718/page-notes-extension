@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Page Notes",
+  "version": "1.0",
+  "description": "Save small notes per page URL right inside your browser.",
+  "action": {
+    "default_title": "Page Notes",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "tabs"]
+}
