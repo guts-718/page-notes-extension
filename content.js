@@ -4,6 +4,14 @@
 
 
 let toolbar;
+let activeFile = null;
+
+const existingFiles = [
+  "Biology – Cell Division",
+  "DSA – Trees",
+  "OS – Deadlocks"
+];
+
 
 document.addEventListener("selectionchange", () => {
     const selection = window.getSelection();
@@ -49,18 +57,92 @@ function showToolbar(rect, text) {
         btn.style.background = c.color;
 
         btn.onclick = () => {
-            alert("button clicked");
-            console.log("highlighted text:", text);
-            console.log("color:", c.name);
+            if(!activeFile){
+                showFileChooser((fileName)=>{
+                    activeFile=fileName;
+                    console.log("file selected: ",activeFile);
+                    saveHighlight(text,c.name);
+                })
+            }else{
+                saveHighlight(text,c.name);
+            }
+            // alert("button clicked");
+            // console.log("highlighted text:", text);
+            // console.log("color:", c.name);
             removeToolbar();
         };
 
         toolbar.appendChild(btn);
     });
 
+
+
     document.body.appendChild(toolbar);
 }
 
+function saveHighlight(text, color) {
+    console.log("FILE:", activeFile);
+    console.log("TEXT:", text);
+    console.log("COLOR:", color);
+    removeToolbar();
+}
+
+
+function showFileChooser(onSelect){
+    const overlay=document.createElement("div");
+    overlay.style.position="fixed";
+    overlay.style.top=0;
+    overlay.style.left=0;
+    overlay.style.height="100%";
+    overlay.style.width="100%";
+    overlay.style.background="rgba(0,0,0,0.4)";
+    overlay.style.zIndex="99999";
+
+    const modal=document.createElement("div");
+    modal.style.background="#fff";
+    modal.style.padding="16px";
+    modal.style.borderRadius="8px";
+    modal.style.width="300px";
+    modal.style.margin="20vh auto";
+    modal.style.display="flex";
+    modal.style.flexDirection="column";
+    modal.style.gap="8px";
+
+    const input=document.createElement("input");
+    input.placeholder="Create new file....";
+    input.style.padding="6px";
+
+    const select = document.createElement("select");
+    select.style.padding = "6px";
+
+    const defaultOpt=document.createElement("option");
+    defaultOpt.value="";
+    defaultOpt.textContent="Select existing file";
+    select.appendChild(defaultOpt);
+
+    existingFiles.forEach(f=>{
+        const opt=document.createElement("option");
+        opt.value=f;
+        opt.textContent=f;
+        select.appendChild(opt);
+    })
+
+    const btn=document.createElement("button");
+    btn.textContent="Confirm";
+    
+    btn.onclick=()=>{
+        const value=input.value.trim() || select.value;
+        if(!value) return alert("Select or enter a file name");
+
+        overlay.remove();
+        onSelect(value);
+
+    }
+
+    modal.append(input, select, btn);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+}
 function removeToolbar() {
     if (toolbar) {
         toolbar.remove();
