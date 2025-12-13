@@ -5,6 +5,7 @@
 
 let toolbar;
 let activeFile = null;
+let savedRange = null;
 
 const existingFiles = [
   "Biology – Cell Division",
@@ -19,11 +20,31 @@ document.addEventListener("selectionchange", () => {
 
     if (!selectedText) return;
 
-    const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
+    savedRange = selection.getRangeAt(0).cloneRange();
+    const rect = savedRange.getBoundingClientRect();
 
     showToolbar(rect, selectedText);
 });
+
+
+function applyHighlight(color) {
+    if (!savedRange) return;
+
+    try {
+        const span = document.createElement("span");
+        span.style.backgroundColor = color;
+        span.style.padding = "2px 0";
+        span.style.borderRadius = "3px";
+
+        savedRange.surroundContents(span);
+    } catch (e) {
+        console.warn("Cannot highlight this selection", e);
+        alert("This selection cannot be highlighted yet.");
+    }
+
+    savedRange = null;
+}
+
 
 function showToolbar(rect, text) {
     console.log("just inside the main function:", text);
@@ -57,19 +78,32 @@ function showToolbar(rect, text) {
         btn.style.background = c.color;
 
         btn.onclick = () => {
+            const colorMap = {
+                red: "#ffcccc",
+                orange: "#ffe0b3",
+                yellow: "#fff3b0"
+            };
+
             if(!activeFile){
-                showFileChooser((fileName)=>{
-                    activeFile=fileName;
-                    console.log("file selected: ",activeFile);
-                    saveHighlight(text,c.name);
-                })
+                showFileChooser((fileName) => {
+                            activeFile = fileName;
+                            applyHighlight(colorMap[c.name]);
+                            console.log("FILE:", activeFile);
+                            console.log("TEXT:", text);
+                            console.log("COLOR:", c.name);
+                            removeToolbar();
+                        });
             }else{
-                saveHighlight(text,c.name);
+                applyHighlight(colorMap[c.name]);
+                console.log("FILE:", activeFile);
+                console.log("TEXT:", text);
+                console.log("COLOR:", c.name);
+                removeToolbar();
             }
             // alert("button clicked");
             // console.log("highlighted text:", text);
             // console.log("color:", c.name);
-            removeToolbar();
+            // removeToolbar();
         };
 
         toolbar.appendChild(btn);
